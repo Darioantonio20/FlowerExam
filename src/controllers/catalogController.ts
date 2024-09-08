@@ -22,3 +22,27 @@ export const addFlower = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error al agregar la flor.' });
   }
 };
+
+export const updateFlower = async (req: Request, res: Response) => {
+    try {
+      const flower = await Flower.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      if (!flower) {
+        return res.status(404).json({ message: 'Flor no encontrada.' });
+      }
+      res.status(200).json(flower);
+    } catch (error) {
+      res.status(500).json({ message: 'Error al actualizar la flor.' });
+    }
+  };
+
+  export const deleteFlower = async (req: Request, res: Response) => {
+    try {
+      const flower = await Flower.findByIdAndDelete(req.params.id);
+      if (!flower) {
+        return res.status(404).json({ message: 'Flor no encontrada.' });
+      }
+      res.status(200).json({ message: 'Flor eliminada.' });
+    } catch (error) {
+      res.status(500).json({ message: 'Error al eliminar la flor.' });
+    }
+  };

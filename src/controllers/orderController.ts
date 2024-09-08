@@ -1,18 +1,27 @@
 import { Request, Response } from 'express';
 import Order from '../models/order';
+import Flower from '../models/flower';
 
 // Crear nuevo pedido
 export const createOrder = async (req: Request, res: Response) => {
-  const { flowers, customerName, eventDate } = req.body;
-  try {
-    const order = new Order({ flowers, customerName, eventDate });
-    await order.save();
-    res.status(201).json(order);
-  } catch (error) {
-    res.status(500).json({ message: 'Error al crear el pedido.' });
-  }
-};
+    const { flowers, customerName, eventDate } = req.body;
+    try {
+      // Obtener los IDs de las flores
+      const flowerIds = await Promise.all(flowers.map(async (flowerName: string) => {
+        const flower = await Flower.findOne({ name: flowerName });
+        if (!flower) {
+          throw new Error(`Flor no encontrada: ${flowerName}`);
+        }
+        return flower._id;
+      }));
 
+      const order = new Order({ flowers: flowerIds, customerName, eventDate });
+      await order.save();
+      res.status(201).json(order);
+    } catch (error) {
+      res.status(500).json({ message: 'Error al crear el pedido.', error: (error as any).message });
+    }
+};
 // Obtener todos los pedidos
 export const getOrders = async (req: Request, res: Response) => {
   try {
